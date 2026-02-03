@@ -13,7 +13,7 @@ const HomeModals = ({
   onToggleSticky,
   onEditFromDetails,
   onDeleteFromDetails,
-
+  
   createOpen,
   createError,
   isCreating,

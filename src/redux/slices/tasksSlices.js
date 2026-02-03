@@ -1,27 +1,28 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { apiClient } from '@/lib/apiClient'
+import {
+  getTasks,
+  createTaskService,
+  updateTaskService,
+  deleteTaskService,
+} from '@/services/tasksService'
 
 export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async () => {
-  const { data } = await apiClient.get('/tasks')
-  return data
+  return getTasks()
 })
 
 export const createTask = createAsyncThunk('tasks/createTask', async payload => {
-  const { data } = await apiClient.post('/tasks', payload)
-  return data
+  return createTaskService(payload)
 })
 
 export const updateTask = createAsyncThunk(
   'tasks/updateTask',
   async ({ id, updates }) => {
-    const { data } = await apiClient.put(`/tasks/${id}`, updates)
-    return data
+    return updateTaskService({ id, updates })
   }
 )
 
 export const deleteTask = createAsyncThunk('tasks/deleteTask', async id => {
-  await apiClient.delete(`/tasks/${id}`)
-  return id
+  return deleteTaskService(id)
 })
 
 const initialState = {
