@@ -1,11 +1,14 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import HomeMainColumn from './components/HomeMainColumn'
 import HomeModals from './components/HomeModals'
+import RightSidebar from './components/RightSidebar'
 import { useHomeClientState } from './components/useHomeClientState'
 
 const HomeClient = () => {
+  const [isLargeScreen, setIsLargeScreen] = useState(false)
+
   const {
     error,
     visibleTasks,
@@ -40,20 +43,50 @@ const HomeClient = () => {
     onConfirmDelete,
   } = useHomeClientState()
 
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 1024px)')
+    const onChange = () => setIsLargeScreen(query.matches)
+    onChange()
+    query.addEventListener('change', onChange)
+    return () => query.removeEventListener('change', onChange)
+  }, [])
+
+  useEffect(() => {
+    if (!isLargeScreen) return
+    if (!detailsOpen) return
+    onCloseDetails()
+  }, [detailsOpen, isLargeScreen, onCloseDetails])
+
+  const openDetails = useMemo(
+    () => (isLargeScreen ? undefined : onOpenDetails),
+    [isLargeScreen, onOpenDetails]
+  )
+
   return (
     <>
-      <HomeMainColumn
-        error={error}
-        tasks={visibleTasks}
-        selectedTaskId={selectedTaskId}
-        isLoading={fetchStatus === 'loading'}
-        onSelectTask={onSelectTask}
-        onOpenDetails={onOpenDetails}
-        onChangeStatus={onChangeStatus}
-        onEditTask={onEditTask}
-        onDeleteTask={onDeleteTask}
-        onOpenCreate={onOpenCreate}
-      />
+      <div className="flex-1 flex min-w-0">
+        <HomeMainColumn
+          error={error}
+          tasks={visibleTasks}
+          selectedTaskId={selectedTaskId}
+          isLoading={fetchStatus === 'loading'}
+          onSelectTask={onSelectTask}
+          onOpenDetails={openDetails}
+          onChangeStatus={onChangeStatus}
+          onEditTask={onEditTask}
+          onDeleteTask={onDeleteTask}
+          onOpenCreate={onOpenCreate}
+        />
+
+        <RightSidebar
+          selectedTask={selectedTask}
+          isLoading={fetchStatus === 'loading'}
+          onEditTask={onEditTask}
+          onDeleteTask={onDeleteTask}
+          onChangeStatus={onChangeStatus}
+          onToggleSticky={onToggleSticky}
+        />
+      </div>
 
       <HomeModals
         detailsOpen={detailsOpen}

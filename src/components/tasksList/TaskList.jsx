@@ -160,7 +160,7 @@ const Tasklist = ({
                   className={[
                     'w-full text-left flex items-start justify-between gap-4 px-4 py-3 rounded-lg border',
                     isSelected
-                      ? 'bg-gray-50 border-gray-200'
+                      ? 'bg-[#fdead6] border-gray-200'
                       : 'bg-white border-transparent hover:border-gray-200 hover:bg-gray-50',
                   ].join(' ')}
                 >
@@ -200,7 +200,7 @@ const Tasklist = ({
                   </div>
 
                   <div
-                    className="shrink-0 flex items-center gap-1 relative"
+                    className="shrink-0 flex items-center gap-1 relative lg:hidden"
                     data-status-picker-root="true"
                   >
                     <button
