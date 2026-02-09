@@ -76,6 +76,8 @@ export const useHomeClientState = () => {
     error,
     tasks,
     visibleTasks,
+    selectedView,
+    selectedPriority,
     selectedTask,
     selectedTaskId,
     detailsTask,

@@ -11,7 +11,10 @@ const HomeClient = () => {
 
   const {
     error,
+    tasks,
     visibleTasks,
+    selectedView,
+    selectedPriority,
     selectedTask,
     selectedTaskId,
     detailsTask,
@@ -68,6 +71,9 @@ const HomeClient = () => {
         <HomeMainColumn
           error={error}
           tasks={visibleTasks}
+          allTasksCount={tasks.length}
+          selectedView={selectedView}
+          selectedPriority={selectedPriority}
           selectedTaskId={selectedTaskId}
           isLoading={fetchStatus === 'loading'}
           onSelectTask={onSelectTask}

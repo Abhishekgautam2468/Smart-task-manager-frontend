@@ -1,6 +1,6 @@
 'use client'
-
-import React, { useMemo } from 'react'
+ 
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -16,6 +16,83 @@ const Sidebar = () => {
   const selectedPriority = useSelector(state => state.tasks.selectedPriority)
   const selectedView = useSelector(state => state.tasks.selectedView)
   const isMobileSidebarOpen = useSelector(state => state.tasks.isMobileSidebarOpen)
+
+  const sheetRef = useRef(null)
+  const lastActiveElementRef = useRef(null)
+  const bodyOverflowRef = useRef('')
+
+  const getFocusableElements = useCallback(root => {
+    if (!root) return []
+    const nodes = root.querySelectorAll(
+      'a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    )
+    return Array.from(nodes).filter(el => {
+      if (!(el instanceof HTMLElement)) return false
+      const style = window.getComputedStyle(el)
+      return style.visibility !== 'hidden' && style.display !== 'none'
+    })
+  }, [])
+
+  const onSheetKeyDown = useCallback(
+    e => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        dispatch(closeMobileSidebar())
+        return
+      }
+
+      if (e.key !== 'Tab') return
+
+      const sheet = sheetRef.current
+      if (!sheet) return
+
+      const focusables = getFocusableElements(sheet)
+      if (!focusables.length) {
+        e.preventDefault()
+        sheet.focus()
+        return
+      }
+
+      const first = focusables[0]
+      const last = focusables[focusables.length - 1]
+      const active = document.activeElement
+
+      if (e.shiftKey) {
+        if (active === first || !(active instanceof Node) || !sheet.contains(active)) {
+          e.preventDefault()
+          last.focus()
+        }
+        return
+      }
+
+      if (active === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    },
+    [dispatch, getFocusableElements]
+  )
+
+  useEffect(() => {
+    if (!isMobileSidebarOpen) return
+
+    lastActiveElementRef.current = document.activeElement
+    bodyOverflowRef.current = document.body.style.overflow || ''
+    document.body.style.overflow = 'hidden'
+
+    const sheet = sheetRef.current
+    if (sheet) {
+      const focusables = getFocusableElements(sheet)
+      const target = focusables[0] || sheet
+      requestAnimationFrame(() => target.focus?.())
+    }
+
+    return () => {
+      document.body.style.overflow = bodyOverflowRef.current || ''
+      const prev = lastActiveElementRef.current
+      if (prev && typeof prev.focus === 'function') prev.focus()
+    }
+  }, [getFocusableElements, isMobileSidebarOpen])
 
   const viewCounts = useMemo(() => {
     const todayISO = getTodayISO()
@@ -342,10 +419,9 @@ const Sidebar = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <motion.button
-              type="button"
-              aria-label="Close menu"
-              className="absolute inset-0 bg-black/40"
+            <motion.div
+              aria-hidden="true"
+              className="absolute inset-0 bg-black/30"
               onClick={() => dispatch(closeMobileSidebar())}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -353,6 +429,12 @@ const Sidebar = () => {
             />
             <motion.aside
               className="absolute inset-x-0 bottom-0 w-full max-h-[85vh] overflow-auto bg-gray-50 border-t rounded-t-2xl px-5 py-5 flex flex-col shadow-xl"
+              ref={sheetRef}
+              tabIndex={-1}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu"
+              onKeyDown={onSheetKeyDown}
               initial={{ y: 520 }}
               animate={{ y: 0 }}
               exit={{ y: 520 }}

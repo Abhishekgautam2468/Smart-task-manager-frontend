@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import ModalShell from './ModalShell'
+import { getTodayISO } from '@/lib/dateUtils'
 
 const TaskFormModal = ({
   mode,
@@ -14,6 +15,7 @@ const TaskFormModal = ({
 }) => {
   const isEdit = mode === 'edit'
   const [titleSnapshot, setTitleSnapshot] = useState(initialValues?.title ?? '')
+  const defaultCreateDueDate = useMemo(() => getTodayISO(), [])
 
   const {
     register,
@@ -24,7 +26,7 @@ const TaskFormModal = ({
     defaultValues: {
       title: '',
       description: '',
-      dueDate: '',
+      dueDate: isEdit ? '' : defaultCreateDueDate,
       priority: 'medium',
       stickyWall: false,
       ...initialValues,

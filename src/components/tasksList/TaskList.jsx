@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import {
   LuBadgeCheck,
@@ -9,11 +9,14 @@ import {
   LuPencil,
   LuTrash2,
 } from 'react-icons/lu'
-import { toDisplayDate } from '@/lib/dateUtils'
+import { getTodayISO, toDisplayDate, toISODate } from '@/lib/dateUtils'
 import emptyStateIllustration from '@/assets/EmptyState.svg'
 
 const Tasklist = ({
   tasks,
+  allTasksCount = 0,
+  selectedView,
+  selectedPriority,
   selectedTaskId,
   isLoading,
   onSelectTask,
@@ -24,6 +27,65 @@ const Tasklist = ({
   onDeleteTask,
 }) => {
   const [statusPickerTaskId, setStatusPickerTaskId] = useState(null)
+
+  const activeView = useMemo(() => {
+    const raw = selectedView || 'today'
+    return raw === 'pending' ? 'overdue' : raw
+  }, [selectedView])
+
+  const todayISO = useMemo(() => getTodayISO(), [])
+  const tomorrowISO = useMemo(() => {
+    const [yyyy, mm, dd] = todayISO.split('-').map(v => Number(v))
+    const local = new Date(yyyy, mm - 1, dd + 1)
+    const tzOffsetMs = local.getTimezoneOffset() * 60_000
+    return new Date(local.getTime() - tzOffsetMs).toISOString().slice(0, 10)
+  }, [todayISO])
+
+  const dueLabel = useCallback(
+    value => {
+      const iso = toISODate(value)
+      if (!iso) return ''
+      if (iso === todayISO) return 'Today'
+      if (iso === tomorrowISO) return 'Tomorrow'
+      return toDisplayDate(iso)
+    },
+    [todayISO, tomorrowISO]
+  )
+
+  const emptyState = useMemo(() => {
+    if (allTasksCount === 0) {
+      return {
+        title: 'No tasks found',
+        description: 'Create a new task to get started.',
+      }
+    }
+
+    if (selectedPriority) {
+      return {
+        title: 'No priority matches',
+        description: 'Try a different priority filter.',
+      }
+    }
+
+    if (activeView === 'overdue') {
+      return {
+        title: 'No overdue tasks',
+        description: 'You are all caught up.',
+      }
+    }
+
+    if (activeView === 'sticky') {
+      return {
+        title: 'Sticky Wall is empty',
+        description: 'Mark a task as sticky to see it here.',
+      }
+    }
+
+    return {
+      title: 'No tasks found',
+      description: 'Try changing filters or create a new task.',
+    }
+  }, [activeView, allTasksCount, selectedPriority])
 
   useEffect(() => {
     if (!statusPickerTaskId) return
@@ -122,10 +184,10 @@ const Tasklist = ({
               priority
             />
             <p className="mt-6 text-lg font-semibold text-gray-900">
-              No tasks found
+              {emptyState.title}
             </p>
             <p className="mt-1 text-sm text-gray-500">
-              Create a new task to get started.
+              {emptyState.description}
             </p>
             <button
               type="button"
@@ -182,7 +244,7 @@ const Tasklist = ({
                         {task.dueDate && (
                           <span className="inline-flex items-center gap-2">
                             <span className="text-gray-400">🗓</span>
-                            {toDisplayDate(task.dueDate)}
+                            {dueLabel(task.dueDate)}
                           </span>
                         )}
                         <span className="inline-flex items-center gap-2">

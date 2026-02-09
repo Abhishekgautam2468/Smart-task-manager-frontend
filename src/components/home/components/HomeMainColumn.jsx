@@ -7,6 +7,9 @@ import TaskList from '@/components/tasksList/TaskList'
 const HomeMainColumn = ({
   error,
   tasks,
+  allTasksCount,
+  selectedView,
+  selectedPriority,
   selectedTaskId,
   isLoading,
   onSelectTask,
@@ -30,6 +33,9 @@ const HomeMainColumn = ({
 
       <TaskList
         tasks={tasks}
+        allTasksCount={allTasksCount}
+        selectedView={selectedView}
+        selectedPriority={selectedPriority}
         selectedTaskId={selectedTaskId}
         isLoading={isLoading}
         onSelectTask={onSelectTask}
