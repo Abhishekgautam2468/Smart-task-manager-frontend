@@ -4,6 +4,17 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useDispatch, useSelector } from 'react-redux'
 import {
+  LuBadgeCheck,
+  LuCalendarClock,
+  LuCalendarDays,
+  LuCircleDot,
+  LuLayers3,
+  LuLayoutList,
+  LuPin,
+  LuSparkles,
+  LuTriangleAlert,
+} from 'react-icons/lu'
+import {
   closeMobileSidebar,
   selectPriority,
   selectView,
@@ -13,6 +24,7 @@ import { getTodayISO, toISODate } from '@/lib/dateUtils'
 const Sidebar = () => {
   const dispatch = useDispatch()
   const tasks = useSelector(state => state.tasks.tasks)
+  const aiPlan = useSelector(state => state.tasks.aiPlan)
   const selectedPriority = useSelector(state => state.tasks.selectedPriority)
   const selectedView = useSelector(state => state.tasks.selectedView)
   const isMobileSidebarOpen = useSelector(state => state.tasks.isMobileSidebarOpen)
@@ -167,8 +179,24 @@ const Sidebar = () => {
 
   const viewButtonClass = view =>
     [
-      'w-full flex items-center justify-between px-3 py-2 rounded-lg',
-      activeView === view ? 'bg-white shadow-sm border' : 'hover:bg-white',
+      'group w-full flex items-center justify-between rounded-xl px-3 py-2.5 transition',
+      activeView === view
+        ? 'bg-gray-950 text-white shadow-sm'
+        : 'text-gray-600 hover:bg-white hover:text-gray-950',
+    ].join(' ')
+
+  const viewIconClass = view =>
+    [
+      'grid h-8 w-8 place-items-center rounded-lg transition',
+      activeView === view
+        ? 'bg-white/15 text-white'
+        : 'bg-white text-gray-500 group-hover:text-gray-900',
+    ].join(' ')
+
+  const countClass = view =>
+    [
+      'text-xs font-bold',
+      activeView === view ? 'text-white/80' : 'text-gray-400',
     ].join(' ')
 
   const pop = {
@@ -192,29 +220,61 @@ const Sidebar = () => {
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 260, damping: 26 }}
-      className="flex flex-col"
+      className="flex min-h-full flex-col"
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-800">Menu</h2>
+        <div>
+          <h2 className="text-lg font-black text-gray-950">Workspace</h2>
+          <p className="mt-1 text-xs font-medium text-gray-500">
+            {tasks.length} total tasks
+          </p>
+        </div>
       </div>
 
-      <div className="mt-4 h-px w-full bg-gray-200" />
+      <div className="mt-5 rounded-2xl border border-yellow-200 bg-yellow-50 p-3">
+        <div className="flex items-center gap-2 text-sm font-bold text-gray-950">
+          <LuSparkles className="h-4 w-4 text-yellow-600" />
+          Smart manager
+        </div>
+        <p className="mt-1 text-xs leading-5 text-gray-600">
+          Let AI rank what matters and apply changes only after review.
+        </p>
+      </div>
 
       <div className="mt-6">
-        <p className="text-[11px] tracking-widest text-gray-400 font-semibold">
+        <p className="px-3 text-[11px] font-bold tracking-widest text-gray-400">
           TASKS
         </p>
-        <nav className="mt-3 space-y-1 text-gray-700">
+        <nav className="mt-3 space-y-1.5">
+          <motion.button
+            type="button"
+            onClick={() => onSelectView('smart')}
+            className={viewButtonClass('smart')}
+            {...pop}
+          >
+            <span className="flex items-center gap-3 text-sm font-semibold">
+              <span className={viewIconClass('smart')}>
+                <LuSparkles className="h-4 w-4" />
+              </span>
+              Smart Plan
+            </span>
+            <span className={countClass('smart')}>
+              {aiPlan?.recommendations?.length || 0}
+            </span>
+          </motion.button>
           <motion.button
             type="button"
             onClick={() => onSelectView('all')}
             className={viewButtonClass('all')}
             {...pop}
           >
-            <span className="flex items-center gap-3 text-sm">
-              <span className="text-gray-400">≡</span> All tasks
+            <span className="flex items-center gap-3 text-sm font-semibold">
+              <span className={viewIconClass('all')}>
+                <LuLayoutList className="h-4 w-4" />
+              </span>
+              All tasks
             </span>
-            <span className="text-xs text-gray-500">{viewCounts.all}</span>
+            <span className={countClass('all')}>{viewCounts.all}</span>
           </motion.button>
           <motion.button
             type="button"
@@ -222,10 +282,13 @@ const Sidebar = () => {
             className={viewButtonClass('today')}
             {...pop}
           >
-            <span className="flex items-center gap-3 text-sm font-semibold text-gray-900">
-              <span className="text-gray-400">▦</span> Today
+            <span className="flex items-center gap-3 text-sm font-semibold">
+              <span className={viewIconClass('today')}>
+                <LuCalendarDays className="h-4 w-4" />
+              </span>
+              Today
             </span>
-            <span className="text-xs text-gray-500">{viewCounts.today}</span>
+            <span className={countClass('today')}>{viewCounts.today}</span>
           </motion.button>
           <motion.button
             type="button"
@@ -233,10 +296,13 @@ const Sidebar = () => {
             className={viewButtonClass('upcoming')}
             {...pop}
           >
-            <span className="flex items-center gap-3 text-sm">
-              <span className="text-gray-400">»</span> Upcoming
+            <span className="flex items-center gap-3 text-sm font-semibold">
+              <span className={viewIconClass('upcoming')}>
+                <LuCalendarClock className="h-4 w-4" />
+              </span>
+              Upcoming
             </span>
-            <span className="text-xs text-gray-500">{viewCounts.upcoming}</span>
+            <span className={countClass('upcoming')}>{viewCounts.upcoming}</span>
           </motion.button>
           <motion.button
             type="button"
@@ -244,10 +310,13 @@ const Sidebar = () => {
             className={viewButtonClass('overdue')}
             {...pop}
           >
-            <span className="flex items-center gap-3 text-sm">
-              <span className="text-gray-400">⏳</span> Overdue tasks
+            <span className="flex items-center gap-3 text-sm font-semibold">
+              <span className={viewIconClass('overdue')}>
+                <LuTriangleAlert className="h-4 w-4" />
+              </span>
+              Overdue
             </span>
-            <span className="text-xs text-gray-500">{viewCounts.overdue}</span>
+            <span className={countClass('overdue')}>{viewCounts.overdue}</span>
           </motion.button>
           <motion.button
             type="button"
@@ -255,10 +324,13 @@ const Sidebar = () => {
             className={viewButtonClass('ongoing')}
             {...pop}
           >
-            <span className="flex items-center gap-3 text-sm">
-              <span className="text-gray-400">↻</span> Ongoing tasks
+            <span className="flex items-center gap-3 text-sm font-semibold">
+              <span className={viewIconClass('ongoing')}>
+                <LuCircleDot className="h-4 w-4" />
+              </span>
+              Ongoing
             </span>
-            <span className="text-xs text-gray-500">{viewCounts.ongoing}</span>
+            <span className={countClass('ongoing')}>{viewCounts.ongoing}</span>
           </motion.button>
           <motion.button
             type="button"
@@ -266,10 +338,13 @@ const Sidebar = () => {
             className={viewButtonClass('completed')}
             {...pop}
           >
-            <span className="flex items-center gap-3 text-sm">
-              <span className="text-gray-400">✓</span> Completed
+            <span className="flex items-center gap-3 text-sm font-semibold">
+              <span className={viewIconClass('completed')}>
+                <LuBadgeCheck className="h-4 w-4" />
+              </span>
+              Completed
             </span>
-            <span className="text-xs text-gray-500">{viewCounts.completed}</span>
+            <span className={countClass('completed')}>{viewCounts.completed}</span>
           </motion.button>
           <motion.button
             type="button"
@@ -277,16 +352,19 @@ const Sidebar = () => {
             className={viewButtonClass('sticky')}
             {...pop}
           >
-            <span className="flex items-center gap-3 text-sm">
-              <span className="text-gray-400">▣</span> Sticky Wall
+            <span className="flex items-center gap-3 text-sm font-semibold">
+              <span className={viewIconClass('sticky')}>
+                <LuPin className="h-4 w-4" />
+              </span>
+              Sticky Wall
             </span>
-            <span className="text-xs text-gray-500">{viewCounts.sticky}</span>
+            <span className={countClass('sticky')}>{viewCounts.sticky}</span>
           </motion.button>
         </nav>
       </div>
 
       <div className="mt-7">
-        <p className="text-[11px] tracking-widest text-gray-400 font-semibold">
+        <p className="px-3 text-[11px] font-bold tracking-widest text-gray-400">
           PRIORITY
         </p>
         <div className="mt-3 space-y-2 text-sm text-gray-700">
@@ -294,9 +372,9 @@ const Sidebar = () => {
             type="button"
             onClick={() => onSelectPriority(null)}
             className={[
-              'w-full flex items-center justify-between px-3 py-2 rounded-lg',
+              'w-full flex items-center justify-between rounded-xl px-3 py-2.5',
               selectedPriority === null
-                ? 'bg-white shadow-sm border'
+                ? 'bg-white shadow-sm border border-gray-200'
                 : 'hover:bg-white',
             ].join(' ')}
             {...pop}
@@ -316,7 +394,7 @@ const Sidebar = () => {
             type="button"
             onClick={() => onSelectPriority('high')}
             className={[
-              'w-full flex items-center justify-between px-3 py-2 rounded-lg text-left',
+              'w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-left',
               selectedPriority === 'high'
                 ? 'bg-white shadow-sm border'
                 : 'hover:bg-white',
@@ -343,7 +421,7 @@ const Sidebar = () => {
             type="button"
             onClick={() => onSelectPriority('medium')}
             className={[
-              'w-full flex items-center justify-between px-3 py-2 rounded-lg text-left',
+              'w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-left',
               selectedPriority === 'medium'
                 ? 'bg-white shadow-sm border'
                 : 'hover:bg-white',
@@ -370,7 +448,7 @@ const Sidebar = () => {
             type="button"
             onClick={() => onSelectPriority('low')}
             className={[
-              'w-full flex items-center justify-between px-3 py-2 rounded-lg text-left',
+              'w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-left',
               selectedPriority === 'low'
                 ? 'bg-white shadow-sm border'
                 : 'hover:bg-white',
@@ -400,12 +478,12 @@ const Sidebar = () => {
 
   return (
     <>
-      <div className="hidden md:block w-[280px] h-full">
+      <div className="hidden h-full w-[292px] shrink-0 md:block">
         <motion.aside
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 240, damping: 28 }}
-          className="h-full bg-gray-50 border-r px-5 py-5 flex flex-col"
+          className="flex h-full min-h-0 flex-col overflow-y-auto border-r border-gray-100 bg-[#f6f8fb] px-4 py-5"
         >
           {sidebarBody}
         </motion.aside>
@@ -428,7 +506,7 @@ const Sidebar = () => {
               exit={{ opacity: 0 }}
             />
             <motion.aside
-              className="absolute inset-x-0 bottom-0 w-full max-h-[85vh] overflow-auto bg-gray-50 border-t rounded-t-2xl px-5 py-5 flex flex-col shadow-xl"
+              className="absolute inset-x-0 bottom-0 flex max-h-[85vh] w-full flex-col overflow-y-auto rounded-t-2xl border-t bg-[#f6f8fb] px-5 py-5 shadow-xl"
               ref={sheetRef}
               tabIndex={-1}
               role="dialog"

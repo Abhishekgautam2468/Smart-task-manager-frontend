@@ -5,6 +5,10 @@ import {
   updateTaskService,
   deleteTaskService,
 } from '@/services/tasksService'
+import {
+  analyzeTasksService,
+  applyAiPlanService,
+} from '@/services/aiTasksService'
 
 export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async () => {
   return getTasks()
@@ -25,6 +29,17 @@ export const deleteTask = createAsyncThunk('tasks/deleteTask', async id => {
   return deleteTaskService(id)
 })
 
+export const analyzeTasks = createAsyncThunk('tasks/analyzeTasks', async () => {
+  return analyzeTasksService()
+})
+
+export const applyAiPlan = createAsyncThunk(
+  'tasks/applyAiPlan',
+  async recommendations => {
+    return applyAiPlanService(recommendations)
+  }
+)
+
 const initialState = {
   tasks: [],
   selectedTaskId: null,
@@ -35,6 +50,10 @@ const initialState = {
   createStatus: 'idle',
   updateStatus: 'idle',
   deleteStatus: 'idle',
+  aiAnalyzeStatus: 'idle',
+  aiApplyStatus: 'idle',
+  aiPlan: null,
+  aiError: null,
   error: null,
 }
 
@@ -117,6 +136,35 @@ const tasksSlice = createSlice({
       .addCase(deleteTask.rejected, (state, action) => {
         state.deleteStatus = 'failed'
         state.error = action.error?.message || 'Failed to delete task'
+      })
+      .addCase(analyzeTasks.pending, state => {
+        state.aiAnalyzeStatus = 'loading'
+        state.aiError = null
+      })
+      .addCase(analyzeTasks.fulfilled, (state, action) => {
+        state.aiAnalyzeStatus = 'succeeded'
+        state.aiPlan = action.payload
+      })
+      .addCase(analyzeTasks.rejected, (state, action) => {
+        state.aiAnalyzeStatus = 'failed'
+        state.aiError = action.error?.message || 'Failed to analyze tasks'
+      })
+      .addCase(applyAiPlan.pending, state => {
+        state.aiApplyStatus = 'loading'
+        state.aiError = null
+      })
+      .addCase(applyAiPlan.fulfilled, (state, action) => {
+        state.aiApplyStatus = 'succeeded'
+        const updatedTasks = action.payload?.updatedTasks || []
+        updatedTasks.forEach(updated => {
+          const idx = state.tasks.findIndex(t => t._id === updated?._id)
+          if (idx !== -1) state.tasks[idx] = updated
+        })
+      })
+      .addCase(applyAiPlan.rejected, (state, action) => {
+        state.aiApplyStatus = 'failed'
+        state.aiError =
+          action.error?.message || 'Failed to apply AI recommendations'
       })
   },
 })

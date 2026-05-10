@@ -17,11 +17,17 @@ export const useHomeClientState = () => {
     createStatus,
     updateStatus,
     deleteStatus,
+    aiAnalyzeStatus,
+    aiApplyStatus,
+    aiPlan,
+    aiError,
     error,
     fetchTasks,
     createTask,
     updateTask,
     deleteTask,
+    analyzeTasks,
+    applyAiPlan,
     selectTask,
   } = bridge
   const modals = useTaskModalsState()
@@ -60,12 +66,16 @@ export const useHomeClientState = () => {
   const isCreating = createStatus === 'loading'
   const isUpdating = updateStatus === 'loading'
   const isDeleting = deleteStatus === 'loading'
+  const isAnalyzing = aiAnalyzeStatus === 'loading'
+  const isApplyingAiPlan = aiApplyStatus === 'loading'
 
   const actions = useTaskActions({
     bridge: {
       createTask,
       updateTask,
       deleteTask,
+      analyzeTasks,
+      applyAiPlan,
       selectTask,
     },
     selectedTask,
@@ -86,6 +96,10 @@ export const useHomeClientState = () => {
     isCreating,
     isUpdating,
     isDeleting,
+    isAnalyzing,
+    isApplyingAiPlan,
+    aiPlan,
+    aiError,
 
     createOpen: modals.createOpen,
     editOpen: modals.editOpen,
@@ -96,5 +110,5 @@ export const useHomeClientState = () => {
     editError: modals.editError,
 
     ...actions,
-}
+  }
 }

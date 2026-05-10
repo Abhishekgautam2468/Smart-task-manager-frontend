@@ -134,6 +134,17 @@ export const useTaskActions = ({ bridge, selectedTask, modals }) => {
     modals.setDeleteOpen(false)
   }, [bridge, modals, selectedTask])
 
+  const onAnalyzeTasks = useCallback(() => {
+    bridge.analyzeTasks().catch(() => {})
+  }, [bridge])
+
+  const onApplyAiPlan = useCallback(
+    recommendations => {
+      return bridge.applyAiPlan(recommendations)
+    },
+    [bridge]
+  )
+
   return {
     onSelectTask,
     onOpenDetails,
@@ -157,5 +168,8 @@ export const useTaskActions = ({ bridge, selectedTask, modals }) => {
 
     onCloseDelete,
     onConfirmDelete,
+
+    onAnalyzeTasks,
+    onApplyAiPlan,
   }
 }

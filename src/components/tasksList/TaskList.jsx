@@ -4,9 +4,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import {
   LuBadgeCheck,
+  LuCalendar,
   LuClock3,
   LuListTodo,
   LuPencil,
+  LuPlus,
   LuTrash2,
 } from 'react-icons/lu'
 import { getTodayISO, toDisplayDate, toISODate } from '@/lib/dateUtils'
@@ -132,6 +134,19 @@ const Tasklist = ({
     return 'bg-yellow-400'
   }
 
+  const viewTitle = useMemo(() => {
+    const labels = {
+      all: 'All tasks',
+      today: 'Today',
+      upcoming: 'Upcoming',
+      overdue: 'Overdue',
+      ongoing: 'Ongoing',
+      completed: 'Completed',
+      sticky: 'Sticky Wall',
+    }
+    return labels[activeView] || 'Tasks'
+  }, [activeView])
+
   const statusMeta = useMemo(
     () => ({
       todo: { label: 'Todo', Icon: LuListTodo, pill: 'bg-gray-100 text-gray-700' },
@@ -150,28 +165,34 @@ const Tasklist = ({
   }
 
   const iconButtonClass =
-    'h-9 w-9 grid place-items-center rounded-lg border border-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-800 active:bg-gray-200'
+    'grid h-9 w-9 place-items-center rounded-xl border border-transparent text-gray-500 hover:border-gray-200 hover:bg-white hover:text-gray-900 active:bg-gray-100'
 
   return (
-    <section className="h-full flex flex-col">
-      <div className="px-6 py-4">
+    <section className="flex h-full flex-col bg-[#fbfcfe]">
+      <div className="flex flex-col gap-3 border-b border-gray-100 bg-white px-5 py-4 md:flex-row md:items-center md:justify-between md:px-7">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
+            {selectedPriority ? `${selectedPriority} priority` : 'Overview'}
+          </p>
+          <h2 className="mt-1 text-2xl font-black text-gray-950">{viewTitle}</h2>
+        </div>
         <button
           type="button"
           onClick={onOpenCreate}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border bg-white hover:bg-gray-50 active:bg-gray-100"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gray-950 px-4 text-sm font-bold text-white shadow-sm hover:bg-gray-800 active:bg-gray-700"
         >
-          <span className="text-gray-400 text-lg leading-none">+</span>
-          <span className="text-sm text-gray-400">Add New Task</span>
+          <LuPlus className="h-4 w-4" />
+          New task
         </button>
       </div>
 
-      <div className="flex-1 overflow-auto px-6 pb-6">
+      <div className="flex-1 overflow-auto px-5 py-5 md:px-7">
         {isLoading ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {Array.from({ length: 6 }).map((_, idx) => (
               <div
                 key={idx}
-                className="h-[54px] rounded-lg border bg-white animate-pulse"
+                className="h-[82px] animate-pulse rounded-2xl border border-gray-100 bg-white"
               />
             ))}
           </div>
@@ -192,13 +213,14 @@ const Tasklist = ({
             <button
               type="button"
               onClick={onOpenCreate}
-              className="mt-6 inline-flex items-center justify-center rounded-lg bg-yellow-400 px-5 py-2.5 text-sm font-semibold text-gray-900 hover:bg-yellow-300 active:bg-yellow-200"
+              className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-gray-950 px-5 py-2.5 text-sm font-bold text-white hover:bg-gray-800 active:bg-gray-700"
             >
-              + Add New Task
+              <LuPlus className="h-4 w-4" />
+              New task
             </button>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {tasks.map(task => {
               const isSelected = selectedTaskId === task._id
               const status = statusOf(task)
@@ -220,37 +242,42 @@ const Tasklist = ({
                   tabIndex={0}
                   aria-current={isSelected ? 'true' : undefined}
                   className={[
-                    'w-full text-left flex items-start justify-between gap-4 px-4 py-3 rounded-lg border',
+                    'w-full text-left flex items-start justify-between gap-4 rounded-2xl border px-4 py-4 shadow-sm transition',
                     isSelected
-                      ? 'bg-[#fdead6] border-gray-200'
-                      : 'bg-white border-transparent hover:border-gray-200 hover:bg-gray-50',
+                      ? 'border-gray-950 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.10)]'
+                      : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-[0_12px_28px_rgba(15,23,42,0.06)]',
                   ].join(' ')}
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="truncate text-base font-bold text-gray-950">
                       {task.title}
                     </p>
+                    {task.description ? (
+                      <p className="mt-1 line-clamp-1 text-sm text-gray-500">
+                        {task.description}
+                      </p>
+                    ) : null}
 
                     {(task.dueDate || task.priority || status) && (
-                      <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-500">
                         <span
                           className={[
-                            'inline-flex items-center rounded-md px-2 py-0.5 font-medium',
+                            'inline-flex items-center rounded-full px-2.5 py-1 font-bold',
                             statusPillClass(status),
                           ].join(' ')}
                         >
                           {statusMeta[status]?.label || statusMeta.todo.label}
                         </span>
                         {task.dueDate && (
-                          <span className="inline-flex items-center gap-2">
-                            <span className="text-gray-400">🗓</span>
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 font-semibold text-gray-700">
+                            <LuCalendar className="h-3.5 w-3.5 text-gray-400" />
                             {dueLabel(task.dueDate)}
                           </span>
                         )}
-                        <span className="inline-flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 font-semibold text-gray-700">
                           <span
                             className={[
-                              'h-2 w-2 rounded',
+                              'h-2 w-2 rounded-full',
                               priorityDotClass(task.priority || 'medium'),
                             ].join(' ')}
                           />

@@ -19,9 +19,13 @@ const HomeClient = () => {
     selectedTaskId,
     detailsTask,
     fetchStatus,
+    aiPlan,
+    aiError,
     isCreating,
     isUpdating,
     isDeleting,
+    isAnalyzing,
+    isApplyingAiPlan,
     createOpen,
     editOpen,
     deleteOpen,
@@ -29,6 +33,8 @@ const HomeClient = () => {
     createError,
     editError,
     onSelectTask,
+    onAnalyzeTasks,
+    onApplyAiPlan,
     onOpenDetails,
     onEditTask,
     onDeleteTask,
@@ -71,12 +77,19 @@ const HomeClient = () => {
         <HomeMainColumn
           error={error}
           tasks={visibleTasks}
+          allTasks={tasks}
           allTasksCount={tasks.length}
           selectedView={selectedView}
           selectedPriority={selectedPriority}
           selectedTaskId={selectedTaskId}
+          aiPlan={aiPlan}
+          aiError={aiError}
           isLoading={fetchStatus === 'loading'}
+          isAnalyzing={isAnalyzing}
+          isApplyingAiPlan={isApplyingAiPlan}
           onSelectTask={onSelectTask}
+          onAnalyzeTasks={onAnalyzeTasks}
+          onApplyAiPlan={onApplyAiPlan}
           onOpenDetails={openDetails}
           onChangeStatus={onChangeStatus}
           onEditTask={onEditTask}
@@ -84,14 +97,16 @@ const HomeClient = () => {
           onOpenCreate={onOpenCreate}
         />
 
-        <RightSidebar
-          selectedTask={selectedTask}
-          isLoading={fetchStatus === 'loading'}
-          onEditTask={onEditTask}
-          onDeleteTask={onDeleteTask}
-          onChangeStatus={onChangeStatus}
-          onToggleSticky={onToggleSticky}
-        />
+        {selectedView !== 'smart' && (
+          <RightSidebar
+            selectedTask={selectedTask}
+            isLoading={fetchStatus === 'loading'}
+            onEditTask={onEditTask}
+            onDeleteTask={onDeleteTask}
+            onChangeStatus={onChangeStatus}
+            onToggleSticky={onToggleSticky}
+          />
+        )}
       </div>
 
       <HomeModals

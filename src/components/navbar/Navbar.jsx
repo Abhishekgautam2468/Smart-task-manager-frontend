@@ -4,6 +4,7 @@ import React from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useDispatch, useSelector } from 'react-redux'
+import { LuMenu, LuSearch, LuSparkles } from 'react-icons/lu'
 import logo from '@/assets/my logo.png'
 import { toggleMobileSidebar } from '@/redux/slices/tasksSlices'
 
@@ -12,12 +13,29 @@ const Navbar = () => {
   const isMobileSidebarOpen = useSelector(state => state.tasks.isMobileSidebarOpen)
 
   return (
-    <header className="flex items-center justify-between px-6 py-5 border-b">
+    <header className="flex items-center justify-between gap-4 border-b border-gray-100 bg-white/95 px-5 py-4 backdrop-blur md:px-7">
       <div className="flex items-center gap-3">
-        <Image src={logo} alt="Task Flow" width={32} height={32} />
-        <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
-          Task Flow
-        </h1>
+        <span className="grid h-10 w-10 place-items-center rounded-xl bg-gray-900 shadow-sm">
+          <Image src={logo} alt="Task Flow" width={26} height={26} />
+        </span>
+        <div>
+          <h1 className="text-xl font-black text-gray-950 md:text-2xl">
+            Task Flow
+          </h1>
+          <p className="hidden text-xs font-medium text-gray-500 sm:block">
+            Plan, prioritize, finish.
+          </p>
+        </div>
+      </div>
+
+      <div className="hidden min-w-0 max-w-md flex-1 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-400 lg:flex">
+        <LuSearch className="h-4 w-4 shrink-0" />
+        <span className="truncate">Search is coming soon</span>
+      </div>
+
+      <div className="hidden items-center gap-2 rounded-full border border-yellow-200 bg-yellow-50 px-3 py-1.5 text-xs font-bold text-yellow-800 sm:flex">
+        <LuSparkles className="h-4 w-4" />
+        AI ready
       </div>
 
       <motion.button
@@ -27,29 +45,9 @@ const Navbar = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         transition={{ type: 'spring', stiffness: 520, damping: 30 }}
-        className="h-10 w-10 grid place-items-center rounded-lg hover:bg-gray-100 active:bg-gray-200 text-gray-700 md:hidden"
+        className="grid h-10 w-10 place-items-center rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 active:bg-gray-100 md:hidden"
       >
-        <span className="relative block h-4 w-5">
-          <motion.span
-            className="absolute left-0 top-0 h-0.5 w-5 rounded bg-current"
-            animate={
-              isMobileSidebarOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }
-            }
-            transition={{ type: 'spring', stiffness: 520, damping: 34 }}
-          />
-          <motion.span
-            className="absolute left-0 top-1.5 h-0.5 w-5 rounded bg-current"
-            animate={isMobileSidebarOpen ? { opacity: 0 } : { opacity: 1 }}
-            transition={{ duration: 0.12 }}
-          />
-          <motion.span
-            className="absolute left-0 top-3 h-0.5 w-5 rounded bg-current"
-            animate={
-              isMobileSidebarOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }
-            }
-            transition={{ type: 'spring', stiffness: 520, damping: 34 }}
-          />
-        </span>
+        <LuMenu className="h-5 w-5" />
       </motion.button>
     </header>
   )

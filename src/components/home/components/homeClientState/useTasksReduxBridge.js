@@ -1,6 +1,8 @@
 import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
+  analyzeTasks,
+  applyAiPlan,
   createTask,
   deleteTask,
   fetchTasks,
@@ -19,6 +21,10 @@ export const useTasksReduxBridge = () => {
   const createStatus = useSelector(state => state.tasks.createStatus)
   const updateStatus = useSelector(state => state.tasks.updateStatus)
   const deleteStatus = useSelector(state => state.tasks.deleteStatus)
+  const aiAnalyzeStatus = useSelector(state => state.tasks.aiAnalyzeStatus)
+  const aiApplyStatus = useSelector(state => state.tasks.aiApplyStatus)
+  const aiPlan = useSelector(state => state.tasks.aiPlan)
+  const aiError = useSelector(state => state.tasks.aiError)
   const error = useSelector(state => state.tasks.error)
 
   const runFetchTasks = useCallback(() => dispatch(fetchTasks()), [dispatch])
@@ -38,6 +44,16 @@ export const useTasksReduxBridge = () => {
     [dispatch]
   )
 
+  const runAnalyzeTasks = useCallback(
+    () => dispatch(analyzeTasks()).unwrap(),
+    [dispatch]
+  )
+
+  const runApplyAiPlan = useCallback(
+    recommendations => dispatch(applyAiPlan(recommendations)).unwrap(),
+    [dispatch]
+  )
+
   const runSelectTask = useCallback(id => dispatch(selectTask(id)), [dispatch])
 
   return {
@@ -50,12 +66,18 @@ export const useTasksReduxBridge = () => {
     createStatus,
     updateStatus,
     deleteStatus,
+    aiAnalyzeStatus,
+    aiApplyStatus,
+    aiPlan,
+    aiError,
     error,
 
     fetchTasks: runFetchTasks,
     createTask: runCreateTask,
     updateTask: runUpdateTask,
     deleteTask: runDeleteTask,
+    analyzeTasks: runAnalyzeTasks,
+    applyAiPlan: runApplyAiPlan,
     selectTask: runSelectTask,
   }
 }
